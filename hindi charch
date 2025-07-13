@@ -1,0 +1,99 @@
+# cnn-model
+from google.colab import files
+uploaded =files.upload();
+
+import zipfile
+import os
+
+
+with zipfile.ZipFile("harshit_2315000937.zip",'r') as zip_ref:
+    zip_ref.extractall("harshit_2315000937")
+
+    import tensorflow as tf 
+
+    import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+
+datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+
+train_data = datagen.flow_from_directory(
+    "harshit_2315000937",
+    target_size=(32, 32),
+    batch_size=32,
+    class_mode='categorical',
+    subset='training'
+)
+
+val_data = datagen.flow_from_directory(
+    "harshit_2315000937",
+    target_size=(32, 32),
+    batch_size=32,
+    class_mode='categorical',
+    subset='validation'
+)
+
+class_names = list(val_data.class_indices.keys())
+print("classes:", class_names)
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)),
+    MaxPooling2D((2, 2)),
+    
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dropout(0.5),
+    Dense(train_data.num_classes, activation='softmax')
+])
+
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+model.summary()
+
+ history= model.fit(
+     train_data,
+     validation_data=val_data,
+     epochs=10
+ )
+
+ loss,acc =model.evaluate(val_data)
+print(f"validation Accuracy: {acc*100:.2f}%")
+
+model.save('my_model.keras')
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+images, labels = next(val_data)
+
+preds = model.predict(images)
+true = np.argmax(labels, axis=1)
+pred = np.argmax(preds, axis=1)
+
+class_names = list(val_data.class_indices.keys())
+
+plt.figure(figsize=(15, 4))
+for i in range(5):
+    plt.subplot(1, 5, i + 1)
+    plt.imshow(images[i])
+    plt.title(f"True: {class_names[true[i]]}\nPred: {class_names[pred[i]]}")
+    plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+model.save('my_model.keras')
+
+from google.colab import files
+files.download('my_model.keras')
